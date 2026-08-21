@@ -12,6 +12,11 @@ Then provide the product/project name, target channel, offer scope, and source
 links/files. The entry performs Source Intake and Product Truth setup before it
 routes into the upstream listing stages.
 
+When installed as a standalone Codex Skill, keep this repository in the current
+workspace (recommended folder name: `jp-commerce-creative-flow`). The entry
+resolves the canonical Overlay from that checkout; it blocks rather than running
+with missing business policy.
+
 ## Runtime storage
 
 Create a private project directory outside this public repository:

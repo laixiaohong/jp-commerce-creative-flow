@@ -13,9 +13,15 @@ This Skill is a thin SwitchBot JP control layer over the upstream five-Skill
 `$japan-listing-demo` runtime. It adds source governance and business policy; it
 does not copy or replace Planning, Production, Hardening, or Evidence Auditor.
 
-Read `references/runtime-contract.md`, then load
-`../../../overlays/switchbot-jp/manifest.json` and only the policy files needed
-for the current stage.
+Read `references/runtime-contract.md`, then resolve the Overlay in this order:
+
+1. repository install: `../../../overlays/switchbot-jp/manifest.json`;
+2. standalone Skill install: search the current workspace for
+   `jp-commerce-creative-flow/overlays/switchbot-jp/manifest.json`;
+3. if neither exists, return `BLOCKED` and ask for the repository/Overlay path.
+
+Load only the policy files needed for the current stage. Never continue with a
+missing Overlay or silently replace it with generic rules.
 
 ## Fixed route
 
