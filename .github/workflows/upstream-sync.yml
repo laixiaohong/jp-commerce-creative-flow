@@ -69,6 +69,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
             --title "Upstream sync conflict: ${{ steps.detect.outputs.short_sha }}" \
             --body-file /tmp/upstream-upgrade-report.md
           exit 1
@@ -107,13 +108,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          existing="$(gh pr list --head '${{ steps.review_merge.outputs.branch }}' --state open --json number --jq '.[0].number // empty')"
+          existing="$(gh pr list --repo "$GITHUB_REPOSITORY" --head '${{ steps.review_merge.outputs.branch }}' --state open --json number --jq '.[0].number // empty')"
           if [ -z "$existing" ]; then
             report="docs/upstream-upgrades/$(date -u +%Y-%m-%d)-${{ steps.detect.outputs.short_sha }}.md"
             gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
               --draft \
               --base main \
-              --head "${{ steps.review_merge.outputs.branch }}" \
+              --head "${{ github.repository_owner }}:${{ steps.review_merge.outputs.branch }}" \
               --title "chore: review upstream ${{ steps.detect.outputs.short_sha }}" \
               --body-file "$report"
           fi

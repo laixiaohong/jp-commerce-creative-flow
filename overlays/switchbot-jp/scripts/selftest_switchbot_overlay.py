@@ -73,12 +73,54 @@ def check_feishu_normalization() -> None:
     assert snapshot["resource_type"] == "sheet"
     assert len(snapshot["content_sha256"]) == 64
     assert snapshot["content"] == payload["content"]
+    partial = normalizer.normalize({**payload, "truncated": True}, "2026-08-21T00:00:00Z")
+    assert partial["status"] == "PARTIAL"
     try:
         normalizer.normalize({**payload, "resource_type": "wiki"})
     except ValueError:
         pass
     else:
         raise AssertionError("Wiki must stay outside formal Feishu source scope")
+    for invalid in (
+        {**payload, "content": ["not-a-row"]},
+        {**payload, "status": "PASS"},
+    ):
+        try:
+            normalizer.normalize(invalid)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Malformed or falsely labelled Feishu reads must fail")
+
+
+def check_validator_is_fail_closed() -> None:
+    fixture = json.loads((FIXTURES / "lock-ultra.json").read_text(encoding="utf-8"))
+    packet = builder.build(copy.deepcopy(fixture["input_packet"]))
+    lock = builder.freeze(packet)
+    mutations = []
+
+    missing_source_metadata = copy.deepcopy(packet)
+    del missing_source_metadata["sources"][0]["retrieved_at"]
+    mutations.append(missing_source_metadata)
+
+    malformed_fact = copy.deepcopy(packet)
+    malformed_fact["specifications"].append({"id": "BAD", "status": "CONFIRMED"})
+    mutations.append(malformed_fact)
+
+    missing_claim_statement = copy.deepcopy(packet)
+    del missing_claim_statement["approved_claims"][0]["statement"]
+    mutations.append(missing_claim_statement)
+
+    unknown_top_level = copy.deepcopy(packet)
+    unknown_top_level["silently_invented"] = True
+    mutations.append(unknown_top_level)
+
+    malformed_tbd = copy.deepcopy(packet)
+    malformed_tbd["unknown_tbd"][0]["blocks"] = "planning"
+    mutations.append(malformed_tbd)
+
+    for mutation in mutations:
+        assert validator.validate(mutation, lock), "Malformed Product Truth Packet must not pass"
 
 
 def check_golden_fixtures() -> None:
@@ -129,6 +171,7 @@ def check_entry_is_thin() -> None:
 def main() -> None:
     check_required_overlay_files()
     check_feishu_normalization()
+    check_validator_is_fail_closed()
     check_golden_fixtures()
     check_entry_is_thin()
     print("PASS: SwitchBot JP Overlay policies, source normalization, Product Truth lock, three Golden Fixtures, module budgets, and human/asset/hardening gates")

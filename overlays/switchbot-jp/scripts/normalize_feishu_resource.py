@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 ALLOWED_TYPES = {"docx", "sheet", "bitable"}
+ALLOWED_STATUSES = {"VERIFIED_READ", "PARTIAL"}
 
 
 def canonical_bytes(value: Any) -> bytes:
@@ -31,6 +32,18 @@ def normalize(payload: dict[str, Any], retrieved_at: str | None = None) -> dict[
         raise ValueError("missing required field: content")
 
     content = payload["content"]
+    if resource_type == "sheet" and (not isinstance(content, list) or any(not isinstance(row, list) for row in content)):
+        raise ValueError("sheet content must remain a two-dimensional list")
+    if resource_type == "bitable" and not isinstance(content, dict):
+        raise ValueError("bitable content must preserve structured tables/fields/records")
+    if resource_type == "docx" and not isinstance(content, (str, list, dict)):
+        raise ValueError("docx content must be structured text or blocks")
+    status = payload.get("status", "VERIFIED_READ")
+    if status not in ALLOWED_STATUSES:
+        raise ValueError(f"invalid successful-read status: {status!r}")
+    truncated = bool(payload.get("truncated", False))
+    if truncated:
+        status = "PARTIAL"
     return {
         "source": "feishu",
         "resource_type": resource_type,
@@ -39,8 +52,8 @@ def normalize(payload: dict[str, Any], retrieved_at: str | None = None) -> dict[
         "token": payload["token"],
         "updated_at": payload.get("updated_at"),
         "retrieved_at": retrieved_at or datetime.now(timezone.utc).isoformat(),
-        "status": payload.get("status", "VERIFIED_READ"),
-        "truncated": bool(payload.get("truncated", False)),
+        "status": status,
+        "truncated": truncated,
         "limits": payload.get("limits"),
         "content_sha256": hashlib.sha256(canonical_bytes(content)).hexdigest(),
         "content": content,

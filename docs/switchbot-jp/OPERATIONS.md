@@ -42,7 +42,7 @@ to the public fork.
 4. Normalize it:
 
 ```bash
-python overlays/switchbot-jp/scripts/normalize_feishu_resource.py \
+python3 overlays/switchbot-jp/scripts/normalize_feishu_resource.py \
   <raw-result.json> <project>/source-snapshots/<source>.json
 ```
 
@@ -56,12 +56,12 @@ their source IDs into a human-reviewed intake matching the Product Truth Packet
 schema, then:
 
 ```bash
-python overlays/switchbot-jp/scripts/build_product_truth_packet.py \
+python3 overlays/switchbot-jp/scripts/build_product_truth_packet.py \
   <reviewed-intake.json> \
   <project>/product-truth/product-truth-packet.json \
   --lock <project>/product-truth/product-truth-packet.lock.json
 
-python overlays/switchbot-jp/scripts/validate_product_truth_packet.py \
+python3 overlays/switchbot-jp/scripts/validate_product_truth_packet.py \
   <project>/product-truth/product-truth-packet.json \
   --lock <project>/product-truth/product-truth-packet.lock.json
 ```
