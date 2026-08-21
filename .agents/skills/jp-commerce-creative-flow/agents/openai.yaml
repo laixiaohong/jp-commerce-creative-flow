@@ -1,0 +1,7 @@
+interface:
+  display_name: "JP Commerce Creative Flow"
+  short_description: "SwitchBot JP source-to-listing flow with truth and human gates"
+  default_prompt: "Use $jp-commerce-creative-flow to run Source Intake, generate and lock a Product Truth Packet, apply the SwitchBot JP Overlay, then route through the existing $japan-listing-demo Planning, Human Review, Production, Hardening, and Evidence Auditor stages. Never auto-approve claims or final visuals."
+
+policy:
+  allow_implicit_invocation: true

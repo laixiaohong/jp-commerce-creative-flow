@@ -1,0 +1,121 @@
+name: Review upstream update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  prepare-draft-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/heymio/japan-listing-demo.git 2>/dev/null || git remote set-url upstream https://github.com/heymio/japan-listing-demo.git
+          git fetch upstream main --tags
+          git fetch origin main
+      - name: Detect update
+        id: detect
+        run: |
+          upstream_sha="$(git rev-parse upstream/main)"
+          origin_sha="$(git rev-parse origin/main)"
+          base_sha="$(git merge-base origin/main upstream/main)"
+          short_sha="$(git rev-parse --short upstream/main)"
+          if git merge-base --is-ancestor upstream/main origin/main; then
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+          echo "origin_sha=$origin_sha" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
+      - name: Build pre-merge compatibility report
+        if: steps.detect.outputs.updated == 'true'
+        run: |
+          python scripts/analyze_upstream_compatibility.py \
+            --base-ref "${{ steps.detect.outputs.base_sha }}" \
+            --head-ref upstream/main \
+            --output /tmp/upstream-upgrade-report.md
+      - name: Merge upstream into review branch only
+        if: steps.detect.outputs.updated == 'true'
+        id: review_merge
+        continue-on-error: true
+        run: |
+          branch="chore/upstream-sync-${{ steps.detect.outputs.short_sha }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch" origin/main
+          git merge --no-ff upstream/main -m "chore: merge upstream ${{ steps.detect.outputs.short_sha }} for review"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Stop on merge conflict and open issue
+        if: steps.detect.outputs.updated == 'true' && steps.review_merge.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Upstream sync conflict: ${{ steps.detect.outputs.short_sha }}" \
+            --body-file /tmp/upstream-upgrade-report.md
+          exit 1
+      - name: Run upstream regression tests
+        if: steps.detect.outputs.updated == 'true' && steps.review_merge.outcome == 'success'
+        run: |
+          python .agents/skills/listing-planning/scripts/selftest_planning.py
+          python .agents/skills/listing-production/scripts/selftest_production.py
+          python .agents/skills/listing-hardening/scripts/selftest_hardening.py
+          python .agents/skills/listing-evidence-auditor/scripts/selftest_auditor.py
+          python .agents/skills/japan-listing-demo/scripts/selftest_router.py
+          python .agents/skills/japan-listing-demo/scripts/selftest_project_state_validator.py
+          python .agents/skills/japan-listing-demo/scripts/validate_overlay.py
+          python .agents/skills/japan-listing-demo/scripts/package_skill.py
+          python scripts/package_codex_bundle.py
+      - name: Run SwitchBot JP regression tests
+        if: steps.detect.outputs.updated == 'true' && steps.review_merge.outcome == 'success'
+        run: |
+          python overlays/switchbot-jp/scripts/selftest_switchbot_overlay.py
+          python scripts/package_switchbot_flow.py
+      - name: Commit upgrade report
+        if: steps.detect.outputs.updated == 'true' && steps.review_merge.outcome == 'success'
+        run: |
+          stamp="$(date -u +%Y-%m-%d)"
+          report="docs/upstream-upgrades/${stamp}-${{ steps.detect.outputs.short_sha }}.md"
+          python scripts/analyze_upstream_compatibility.py \
+            --base-ref "${{ steps.detect.outputs.base_sha }}" \
+            --head-ref upstream/main \
+            --test-status PASS \
+            --output "$report"
+          git add "$report"
+          git commit -m "docs: add upstream compatibility report ${{ steps.detect.outputs.short_sha }}"
+          git push --set-upstream origin "${{ steps.review_merge.outputs.branch }}"
+      - name: Create Draft PR for human review
+        if: steps.detect.outputs.updated == 'true' && steps.review_merge.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing="$(gh pr list --repo "$GITHUB_REPOSITORY" --head '${{ steps.review_merge.outputs.branch }}' --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$existing" ]; then
+            report="docs/upstream-upgrades/$(date -u +%Y-%m-%d)-${{ steps.detect.outputs.short_sha }}.md"
+            gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
+              --draft \
+              --base main \
+              --head "${{ github.repository_owner }}:${{ steps.review_merge.outputs.branch }}" \
+              --title "chore: review upstream ${{ steps.detect.outputs.short_sha }}" \
+              --body-file "$report"
+          fi

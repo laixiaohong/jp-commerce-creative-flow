@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/laixiaohong/jp-commerce-creative-flow/overlays/switchbot-jp/schemas/product-truth-packet.schema.json",
+  "title": "SwitchBot JP Product Truth Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "packet_id",
+    "revision",
+    "generated_at",
+    "market",
+    "product",
+    "sku_offers",
+    "specifications",
+    "approved_claims",
+    "unapproved_claims",
+    "compatibility",
+    "installation",
+    "target_users",
+    "user_scenarios",
+    "pricing",
+    "bundles",
+    "available_assets",
+    "forbidden_claims",
+    "unknown_tbd",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "packet_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "generated_at": {"type": "string", "minLength": 1},
+    "market": {"const": "JP"},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "source_refs"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "official_name_ja": {"type": ["string", "null"]},
+        "category": {"type": ["string", "null"]},
+        "status": {"$ref": "#/$defs/fact_status"},
+        "source_refs": {"$ref": "#/$defs/source_refs"}
+      }
+    },
+    "sku_offers": {"type": "array", "items": {"$ref": "#/$defs/fact_item"}},
+    "specifications": {"type": "array", "items": {"$ref": "#/$defs/fact_item"}},
+    "approved_claims": {"type": "array", "items": {"$ref": "#/$defs/approved_claim"}},
+    "unapproved_claims": {"type": "array", "items": {"$ref": "#/$defs/unapproved_claim"}},
+    "compatibility": {"type": "array", "items": {"$ref": "#/$defs/fact_item"}},
+    "installation": {"type": "array", "items": {"$ref": "#/$defs/fact_item"}},
+    "target_users": {"type": "array", "items": {"$ref": "#/$defs/evidence_item"}},
+    "user_scenarios": {"type": "array", "items": {"$ref": "#/$defs/evidence_item"}},
+    "pricing": {"type": "array", "items": {"$ref": "#/$defs/fact_item"}},
+    "bundles": {"type": "array", "items": {"$ref": "#/$defs/fact_item"}},
+    "available_assets": {"type": "array", "items": {"$ref": "#/$defs/asset_item"}},
+    "forbidden_claims": {"type": "array", "items": {"$ref": "#/$defs/evidence_item"}},
+    "unknown_tbd": {"type": "array", "items": {"$ref": "#/$defs/unknown_item"}},
+    "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_item"}}
+  },
+  "$defs": {
+    "fact_status": {"enum": ["CONFIRMED", "CONDITIONAL", "CONFLICT", "MISSING", "PROHIBITED", "UNKNOWN"]},
+    "source_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "fact_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "value", "status", "source_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "value": {},
+        "status": {"$ref": "#/$defs/fact_status"},
+        "scope": {"type": ["string", "null"]},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "source_refs": {"$ref": "#/$defs/source_refs"}
+      }
+    },
+    "evidence_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "status", "source_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "status": {"$ref": "#/$defs/fact_status"},
+        "source_refs": {"$ref": "#/$defs/source_refs"}
+      }
+    },
+    "approved_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "locale", "scope", "conditions", "source_refs", "approval"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "locale": {"const": "ja-JP"},
+        "scope": {"type": "string", "minLength": 1},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "source_refs": {"$ref": "#/$defs/source_refs", "minItems": 1},
+        "approval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "approved_by", "approved_at"],
+          "properties": {
+            "status": {"const": "APPROVED"},
+            "approved_by": {"type": "string", "minLength": 1},
+            "approved_at": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "unapproved_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "status", "reason", "source_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "status": {"enum": ["PENDING", "CONFLICT", "PROHIBITED", "UNKNOWN"]},
+        "reason": {"type": "string", "minLength": 1},
+        "source_refs": {"$ref": "#/$defs/source_refs"}
+      }
+    },
+    "asset_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "class", "path_or_ref", "status", "source_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "class": {"enum": ["OFFICIAL_APPROVED", "OFFICIAL_PENDING", "DERIVATIVE_AUTHORIZED", "REFERENCE_ONLY", "AI_CONCEPT_ONLY", "UNKNOWN"]},
+        "path_or_ref": {"type": ["string", "null"]},
+        "status": {"enum": ["AVAILABLE", "PENDING", "MISSING", "BLOCKED"]},
+        "source_refs": {"$ref": "#/$defs/source_refs"}
+      }
+    },
+    "unknown_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "question", "owner", "deadline", "blocks"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "question": {"type": "string", "minLength": 1},
+        "owner": {"type": ["string", "null"]},
+        "deadline": {"type": ["string", "null"]},
+        "blocks": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "source_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source_type", "title", "original_url", "token", "updated_at", "retrieved_at", "content_sha256", "status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "source_type": {"enum": ["feishu_docx", "feishu_sheet", "feishu_bitable", "product_knowledge", "official_file", "human_decision"]},
+        "title": {"type": ["string", "null"]},
+        "original_url": {"type": ["string", "null"]},
+        "token": {"type": ["string", "null"]},
+        "updated_at": {"type": ["string", "null"]},
+        "retrieved_at": {"type": "string", "minLength": 1},
+        "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "status": {"enum": ["VERIFIED_READ", "PARTIAL", "STALE", "CONFLICT", "BLOCKED"]}
+      }
+    }
+  }
+}
