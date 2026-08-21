@@ -1,0 +1,37 @@
+{
+  "fixture_notice": "SYNTHETIC REGRESSION DATA ONLY — NOT PRODUCT TRUTH",
+  "input_packet": {
+    "schema_version": "1.0",
+    "packet_id": "golden-s30-mini-r1",
+    "revision": 1,
+    "generated_at": "2026-08-21T00:00:00Z",
+    "market": "JP",
+    "product": {"name": "S30 mini", "official_name_ja": null, "category": null, "status": "UNKNOWN", "source_refs": ["SRC-FIXTURE"]},
+    "sku_offers": [],
+    "specifications": [],
+    "approved_claims": [
+      {"id": "CLAIM-SYNTHETIC-PENDING", "statement": "[SYNTHETIC TEST ONLY] pending claim", "locale": "ja-JP", "scope": "fixture", "conditions": [], "source_refs": ["SRC-FIXTURE"], "approval": {"status": "PENDING", "approved_by": "", "approved_at": ""}}
+    ],
+    "unapproved_claims": [],
+    "compatibility": [],
+    "installation": [],
+    "target_users": [],
+    "user_scenarios": [],
+    "pricing": [],
+    "bundles": [],
+    "available_assets": [],
+    "forbidden_claims": [],
+    "unknown_tbd": [{"id": "TBD-001", "question": "All real product facts require canonical verification", "owner": null, "deadline": null, "blocks": ["planning"]}],
+    "sources": [{"id": "SRC-FIXTURE", "source_type": "official_file", "title": "Synthetic fixture", "original_url": null, "token": null, "updated_at": null, "retrieved_at": "2026-08-21T00:00:00Z", "content_sha256": "0000000000000000000000000000000000000000000000000000000000000000", "status": "VERIFIED_READ"}]
+  },
+  "regression_expectations": {
+    "approved_claim_count": 0,
+    "unapproved_claim_count": 1,
+    "gallery_storyline": ["G1_POSITIONING", "G2_PRIMARY_PROOF", "G3_USE_CASE", "G4_COMPATIBILITY", "G5_INSTALLATION", "G6_OBJECTION", "G7_OFFER"],
+    "a_plus_tier": "basic",
+    "a_plus_modules": ["A1_OVERVIEW", "A2_MECHANISM", "A3_USE_CASE", "A4_COMPARISON", "A5_FAQ"],
+    "asset_gate": "BLOCKED",
+    "human_review_gate": "REQUIRED",
+    "hardening": "BLOCKED"
+  }
+}

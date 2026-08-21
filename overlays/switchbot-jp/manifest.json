@@ -1,0 +1,34 @@
+{
+  "overlay_id": "switchbot-jp",
+  "schema_version": "1.0",
+  "extends": "$japan-listing-demo",
+  "entry_skill": "$jp-commerce-creative-flow",
+  "upstream_core_policy": "additive-only",
+  "policies": [
+    "product-truth-policy.md",
+    "claim-policy.md",
+    "amazon-jp-policy.md",
+    "visual-production-policy.md",
+    "asset-policy.md",
+    "human-review-gates.md",
+    "feishu-source-policy.md",
+    "product-knowledge-policy.md"
+  ],
+  "schemas": {
+    "product_truth_packet": "schemas/product-truth-packet.schema.json"
+  },
+  "required_gates": [
+    "SOURCE_INTAKE_GATE",
+    "PRODUCT_TRUTH_GATE",
+    "CLAIM_HUMAN_REVIEW_GATE",
+    "VISUAL_DIRECTION_HUMAN_REVIEW_GATE",
+    "FINAL_VISUAL_HUMAN_REVIEW_GATE"
+  ],
+  "upstream_skills": [
+    "japan-listing-demo",
+    "listing-planning",
+    "listing-production",
+    "listing-hardening",
+    "listing-evidence-auditor"
+  ]
+}

@@ -1,0 +1,21 @@
+name: Validate SwitchBot JP Overlay
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-overlay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python overlays/switchbot-jp/scripts/selftest_switchbot_overlay.py
+      - run: python scripts/package_switchbot_flow.py
+      - run: python -m zipfile -l dist/jp-commerce-creative-flow-codex-bundle.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jp-commerce-creative-flow-bundle
+          path: dist/jp-commerce-creative-flow-codex-bundle.zip

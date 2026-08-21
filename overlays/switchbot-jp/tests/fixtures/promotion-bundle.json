@@ -1,0 +1,35 @@
+{
+  "fixture_notice": "SYNTHETIC REGRESSION DATA ONLY — NOT A REAL OFFER",
+  "input_packet": {
+    "schema_version": "1.0",
+    "packet_id": "golden-promotion-bundle-r1",
+    "revision": 1,
+    "generated_at": "2026-08-21T00:00:00Z",
+    "market": "JP",
+    "product": {"name": "Promotion / Bundle Fixture", "official_name_ja": null, "category": null, "status": "UNKNOWN", "source_refs": ["SRC-FIXTURE"]},
+    "sku_offers": [{"id": "OFFER-001", "label": "Synthetic bundle", "value": null, "status": "UNKNOWN", "scope": "fixture-only", "conditions": [], "source_refs": ["SRC-FIXTURE"]}],
+    "specifications": [],
+    "approved_claims": [],
+    "unapproved_claims": [],
+    "compatibility": [],
+    "installation": [],
+    "target_users": [],
+    "user_scenarios": [],
+    "pricing": [{"id": "PRICE-001", "label": "Synthetic promotion price", "value": null, "status": "MISSING", "scope": "fixture-only", "conditions": [], "source_refs": ["SRC-FIXTURE"]}],
+    "bundles": [{"id": "BUNDLE-001", "label": "Synthetic bundle contents", "value": null, "status": "UNKNOWN", "scope": "fixture-only", "conditions": [], "source_refs": ["SRC-FIXTURE"]}],
+    "available_assets": [],
+    "forbidden_claims": [{"id": "FORBID-001", "statement": "Do not invent price, discount, deadline, inventory, or bundle contents", "status": "PROHIBITED", "source_refs": ["SRC-FIXTURE"]}],
+    "unknown_tbd": [{"id": "TBD-001", "question": "Real offer scope, price, period, inventory, and bundle contents", "owner": null, "deadline": null, "blocks": ["offer-copy", "production"]}],
+    "sources": [{"id": "SRC-FIXTURE", "source_type": "human_decision", "title": "Synthetic fixture", "original_url": null, "token": null, "updated_at": null, "retrieved_at": "2026-08-21T00:00:00Z", "content_sha256": "2222222222222222222222222222222222222222222222222222222222222222", "status": "VERIFIED_READ"}]
+  },
+  "regression_expectations": {
+    "approved_claim_count": 0,
+    "unapproved_claim_count": 0,
+    "gallery_storyline": ["G1_OFFER_IDENTITY", "G2_BUNDLE_SCOPE", "G3_PRODUCT_VALUE", "G4_USE_CASE", "G5_TERMS", "G6_OBJECTION", "G7_CTA"],
+    "a_plus_tier": "basic",
+    "a_plus_modules": ["A1_BUNDLE_OVERVIEW", "A2_COMPONENT_ROLES", "A3_SCENARIO", "A4_COMPARISON", "A5_FAQ"],
+    "asset_gate": "BLOCKED",
+    "human_review_gate": "REQUIRED",
+    "hardening": "BLOCKED"
+  }
+}
